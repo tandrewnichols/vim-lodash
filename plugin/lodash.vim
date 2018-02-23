@@ -180,6 +180,18 @@ function! _.map(list, fn)
   return map(copy(a:list), a:fn)
 endfunction
 
+function! _.reduce(list, fn, memo)
+  let Iteree = a:fn
+  let memo = a:memo
+  let list = copy(a:list)
+
+  for item in list
+    let memo = Iteree(memo, item, index(list, item), list)
+  endfor
+
+  return memo
+endfunction
+
 function! _.get(obj, path, ...)
   let default = a:0 == 1 ? a:1 : 0
   let path = s:NormalizePath(a:path)
