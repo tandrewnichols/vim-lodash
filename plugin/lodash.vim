@@ -1,4 +1,6 @@
-if exists("g:vigor_loaded") || &cp | finish | endif
+if exists("g:lodash_loaded") || &cp | finish | endif
+
+let g:lodash_loaded = 1
 
 let _ = {}
 
@@ -59,6 +61,19 @@ function! _.includes(str, pat)
 endfunction
 
 function! _.find(list, predicate)
+  return s:findByObj(a:list, a:predicate)
+endfunction
+
+function! _.findIndex(list, predicate)
+  let obj = s:findByObj(a:list, a:predicate)
+  if type(obj) == 4
+    return index(a:list, obj)
+  else
+    return -1
+  endif
+endfunction
+
+function! s:findByObj(list, predicate)
   for item in a:list
     let found = 1
     for key in keys(a:predicate)
@@ -176,8 +191,14 @@ function! _.sortNumeric(list, prop)
   return sort(a:list, function('s:SortNumeric'))
 endfunction
 
-function! _.map(list, fn)
-  return map(copy(a:list), a:fn)
+function! _.map(list, predicate)
+  let list = copy(a:list)
+  if type(a:predicate) == 2
+    return map(list, a:predicate)
+  elseif type(a:predicate) == 1
+    let predicate = 'v:val.' . a:predicate
+    return map(list, predicate)
+  endif
 endfunction
 
 function! _.reduce(list, fn, memo)
