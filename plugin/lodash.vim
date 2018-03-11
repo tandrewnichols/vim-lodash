@@ -2,7 +2,8 @@ if exists("g:loaded_lodash") || &cp | finish | endif
 
 let g:loaded_lodash = 1
 
-let _ = {}
+let _ = { 'VERSION': '0.0.1' }
+
 
 function! _.extend(dest, ...)
   let srcs = a:000
