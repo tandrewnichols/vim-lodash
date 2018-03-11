@@ -4,6 +4,18 @@ let g:loaded_lodash = 1
 
 let _ = { 'VERSION': '0.0.1' }
 
+let s:types = {
+  \   'number': 0,
+  \   'string': 1,
+  \   'function': 2,
+  \   'list': 3,
+  \   'dict': 4,
+  \   'float': 5,
+  \   'bool': 6,
+  \   'none': 7,
+  \   'job': 8,
+  \   'channel': 9
+  \ }
 
 function! _.extend(dest, ...)
   let srcs = a:000
@@ -29,7 +41,7 @@ function! _.defaultsDeep(dest, ...)
     for [k,v] in items(src)
       if !has_key(a:dest, k)
         let a:dest[k] = deepcopy(src[k])
-      elseif type(v) == 4
+      elseif type(v) == s:types.dict
         call self.defaultsDeep(a:dest[k], v)
       endif
     endfor
@@ -42,7 +54,7 @@ function! _.merge(dest, ...)
   let srcs = a:000
   for src in srcs
     for [k,v] in items(src)
-      if (type(v) == 4)
+      if type(v) == s:types.dict
         let a:dest[k] = self.merge(a:dest[k], v)
       else
         let a:dest[k] = v
@@ -67,7 +79,7 @@ endfunction
 
 function! _.findIndex(list, predicate)
   let obj = s:findByObj(a:list, a:predicate)
-  if type(obj) == 4
+  if type(obj) == s:types.dict
     return index(a:list, obj)
   else
     return -1
@@ -142,7 +154,7 @@ endfunction
 
 function! _.sortBy(list, field)
   if has_key(a:list[0], a:field)
-    if type(a:list[0][a:field]) == 0
+    if type(a:list[0][a:field]) == s:types.number
       return self.sortNumeric(a:list, a:field)
     else
       return self.sortAlpha(a:list, a:field)
@@ -194,9 +206,9 @@ endfunction
 
 function! _.map(list, predicate)
   let list = copy(a:list)
-  if type(a:predicate) == 2
+  if type(a:predicate) == s:types.function
     return map(list, a:predicate)
-  elseif type(a:predicate) == 1
+  elseif type(a:predicate) == s:types.string
     let predicate = 'v:val.' . a:predicate
     return map(list, predicate)
   endif
@@ -268,7 +280,7 @@ endfunction
 
 function! s:NormalizePath(path)
   let path = a:path
-  if type(path) == 1
+  if type(path) == s:types.string
     let path = substitute(path, "'", '', 'g')
     let path = substitute(path, '"', '', 'g')
     let path = substitute(path, '\[', '.', 'g')
@@ -279,33 +291,33 @@ function! s:NormalizePath(path)
 endfunction
 
 function! _.isNumber(thing)
-  return type(a:thing) == 0
+  return type(a:thing) == s:types.number
 endfunction
 
 function! _.isString(thing)
-  return type(a:thing) == 1
+  return type(a:thing) == s:types.string
 endfunction
 
 function! _.isFunction(thing)
-  return type(a:thing) == 2
+  return type(a:thing) == s:types.function
 endfunction
 
 function! _.isFuncref(thing)
-  return type(a:thing) == 2
+  return type(a:thing) == s:types.function
 endfunction
 
 function! _.isArray(thing)
-  return type(a:thing) == 3
+  return type(a:thing) == s:types.list
 endfunction
 
 function! _.isList(thing)
-  return type(a:thing) == 3
+  return type(a:thing) == s:types.list
 endfunction
 
 function! _.isObject(thing)
-  return type(a:thing) == 4
+  return type(a:thing) == s:stypes.dict
 endfunction
 
 function! _.isDict(thing)
-  return type(a:thing) == 4
+  return type(a:thing) == s:stypes.dict
 endfunction
