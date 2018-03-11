@@ -1,6 +1,6 @@
-if exists("g:lodash_loaded") || &cp | finish | endif
+if exists("g:loaded_lodash") || &cp | finish | endif
 
-let g:lodash_loaded = 1
+let g:loaded_lodash = 1
 
 let _ = {}
 
