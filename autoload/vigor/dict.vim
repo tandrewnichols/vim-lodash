@@ -1,0 +1,124 @@
+let s:types = {
+  \   'number': 0,
+  \   'string': 1,
+  \   'function': 2,
+  \   'list': 3,
+  \   'dict': 4,
+  \   'float': 5,
+  \   'bool': 6,
+  \   'none': 7,
+  \   'job': 8,
+  \   'channel': 9
+  \ }
+
+function! vigor#dict#extend(dest, ...)
+  let srcs = a:000
+  for src in srcs
+    call extend(a:dest, src)
+  endfor
+
+  return a:dest
+endfunction
+
+function! vigor#dict#defaults(dest, ...)
+  let srcs = a:000
+  for src in srcs
+    call extend(a:dest, src, 'keep')
+  endfor
+
+  return a:dest
+endfunction
+
+function! vigor#dict#defaultsDeep(dest, ...)
+  let srcs = a:000
+  for src in srcs
+    for [k,v] in items(src)
+      if !has_key(a:dest, k)
+        let a:dest[k] = deepcopy(src[k])
+      elseif type(v) == s:types.dict
+        call self.defaultsDeep(a:dest[k], v)
+      endif
+    endfor
+  endfor
+
+  return a:dest
+endfunction
+
+function! vigor#dict#merge(dest, ...)
+  let srcs = a:000
+  for src in srcs
+    for [k,v] in items(src)
+      if type(v) == s:types.dict
+        let a:dest[k] = self.merge(a:dest[k], v)
+      else
+        let a:dest[k] = v
+      endif
+    endfor
+  endfor
+
+  return a:dest
+endfunction
+
+function! vigor#dict#get(obj, path, ...)
+  let default = a:0 == 1 ? a:1 : 0
+  let path = s:NormalizePath(a:path)
+  let obj = a:obj
+  for segment in path
+    if (self.isObject(obj) && has_key(obj, segment)) || (self.isArray(obj) && len(obj) + 1 >= segment)
+      if self.isObject(obj[ segment  ]) || self.isArray(obj[ segment ])
+        let obj = obj[ segment ]
+      else
+        return obj[ segment ]
+      endif
+    else
+      return default
+    endif
+  endfor
+endfunction
+
+function! vigor#dict#has(obj, path)
+  let path = s:NormalizePath(a:path)
+  let obj = a:obj
+  for segment in path
+    if (self.isObject(obj) && has_key(obj, segment)) || (self.isArray(obj) && len(obj) + 1 >= segment)
+      if self.isObject(obj[ segment  ]) || self.isArray(obj[ segment ])
+        let obj = obj[ segment ]
+      else
+        return exists('obj[ segment ]')
+      endif
+    else
+      return 0
+    endif
+  endfor
+endfunction
+
+function! vigor#dict#set(obj, path, val)
+  let path = s:NormalizePath(a:path)
+  let obj = a:obj
+  let out = obj
+
+  for segment in path
+    if index(path, segment) == len(path) - 1
+      let obj[ segment ] = a:val
+    else
+      if self.isObject(obj) && !has_key(obj, segment)
+        let obj[ segment ] = {}
+        let obj = obj[ segment ]
+      endif
+    endif
+  endfor
+
+  return out
+endfunction
+
+function! s:NormalizePath(path)
+  let path = a:path
+  if type(path) == s:types.string
+    let path = substitute(path, "'", '', 'g')
+    let path = substitute(path, '"', '', 'g')
+    let path = substitute(path, '\[', '.', 'g')
+    let path = substitute(path, '\]', '', 'g')
+    let path = split(path, '\.')
+  endif
+  return path
+endfunction
