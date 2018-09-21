@@ -4,7 +4,7 @@ endfunction
 
 function! vigor#list#findIndex(list, predicate)
   let obj = s:findByObj(a:list, a:predicate)
-  if type(obj) == s:types.dict
+  if type(obj) == g:vigor_types.dict
     return index(a:list, obj)
   else
     return -1
@@ -31,7 +31,7 @@ endfunction
 
 function! vigor#list#sortBy(list, field)
   if has_key(a:list[0], a:field)
-    if type(a:list[0][a:field]) == s:types.number
+    if type(a:list[0][a:field]) == g:vigor_types.number
       return self.sortNumeric(a:list, a:field)
     else
       return self.sortAlpha(a:list, a:field)
@@ -83,9 +83,9 @@ endfunction
 
 function! vigor#list#map(list, predicate)
   let list = copy(a:list)
-  if type(a:predicate) == s:types.function
+  if type(a:predicate) == g:vigor_types.function
     return map(list, a:predicate)
-  elseif type(a:predicate) == s:types.string
+  elseif type(a:predicate) == g:vigor_types.string
     let predicate = 'v:val.' . a:predicate
     return map(list, predicate)
   endif

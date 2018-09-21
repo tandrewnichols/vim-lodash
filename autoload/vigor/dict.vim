@@ -1,16 +1,3 @@
-let s:types = {
-  \   'number': 0,
-  \   'string': 1,
-  \   'function': 2,
-  \   'list': 3,
-  \   'dict': 4,
-  \   'float': 5,
-  \   'bool': 6,
-  \   'none': 7,
-  \   'job': 8,
-  \   'channel': 9
-  \ }
-
 function! vigor#dict#extend(dest, ...)
   let srcs = a:000
   for src in srcs
@@ -35,7 +22,7 @@ function! vigor#dict#defaultsDeep(dest, ...)
     for [k,v] in items(src)
       if !has_key(a:dest, k)
         let a:dest[k] = deepcopy(src[k])
-      elseif type(v) == s:types.dict
+      elseif type(v) == g:vigor_types.dict
         call self.defaultsDeep(a:dest[k], v)
       endif
     endfor
@@ -48,7 +35,7 @@ function! vigor#dict#merge(dest, ...)
   let srcs = a:000
   for src in srcs
     for [k,v] in items(src)
-      if type(v) == s:types.dict
+      if type(v) == g:vigor_types.dict
         let a:dest[k] = self.merge(a:dest[k], v)
       else
         let a:dest[k] = v
@@ -113,7 +100,7 @@ endfunction
 
 function! s:NormalizePath(path)
   let path = a:path
-  if type(path) == s:types.string
+  if type(path) == g:vigor_types.string
     let path = substitute(path, "'", '', 'g')
     let path = substitute(path, '"', '', 'g')
     let path = substitute(path, '\[', '.', 'g')
