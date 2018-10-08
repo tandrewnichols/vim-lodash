@@ -1,13 +1,25 @@
 function! vigor#list#find(list, predicate, ...) abort
-  return s:findByObj(a:list, a:predicate)
+  let predicate = a:predicate
+  let list = a:list
+  let args = a:0 > 0 ? a:1 : 3
+
+  if type(predicate) == g:vigor_types.dict
+    return s:findByObj(list, predicate)
+  elseif type(predicate) == g:vigor_types.function
+    return s:findByFunc(list, predicate, args)
+  elseif type(predicate) == g:vigor_types.string
+    return s:findByFunc(list, function(predicate), args)
+  endif
 endfunction
 
-function! vigor#list#findIndex(list, predicate)
-  let obj = s:findByObj(a:list, a:predicate)
-  if type(obj) == g:vigor_types.dict
-    return index(a:list, obj)
-  else
+function! vigor#list#findIndex(list, predicate, ...) abort
+  let args = a:0 > 0 ? a:1 : 3
+  let res = vigor#list#find(a:list, a:predicate, args)
+
+  if res == v:null
     return -1
+  else
+    return index(a:list, res)
   endif
 endfunction
 
@@ -26,15 +38,37 @@ function! s:findByObj(list, predicate) abort
     endif
   endfor
 
-  return -1
+  return v:null
+endfunction
+
+function! s:findByFunc(list, function, args) abort
+  let Predicate = a:function
+  let args = a:args
+  for item in a:list
+    let i = index(a:list, item)
+
+    if args == 1
+      let res = Predicate(item)
+    elseif args == 2
+      let res = Predicate(item, i)
+    else
+      let res = Predicate(item, i, a:list)
+    endif
+
+    if res
+      return item
+    endif
+  endfor
+
+  return v:null
 endfunction
 
 function! vigor#list#sortBy(list, field) abort
   if has_key(a:list[0], a:field)
     if type(a:list[0][a:field]) == g:vigor_types.number
-      return self.sortNumeric(a:list, a:field)
+      return vigor#list#sortNumeric(a:list, a:field)
     else
-      return self.sortAlpha(a:list, a:field)
+      return vigor#list#sortAlpha(a:list, a:field)
     endif
   else
     return a:list
@@ -101,4 +135,20 @@ function! vigor#list#reduce(list, fn, memo) abort
   endfor
 
   return memo
+endfunction
+
+function! vigor#list#fill(list, num, ...) abort
+  let val = a:0 == 0 ? v:null : a:1
+  let list = a:list
+  let num = a:num
+
+  if len(list) == 0
+    call add(list, val)
+  endif
+
+  if num > 1
+    let list = repeat(list, num)
+  endif
+
+  return list
 endfunction
