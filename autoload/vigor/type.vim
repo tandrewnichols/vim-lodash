@@ -29,3 +29,7 @@ endfunction
 function! vigor#type#isDict(thing) abort
   return type(a:thing) == g:vigor_types.dict
 endfunction
+
+function! vigor#type#isNull(thing) abort
+  return type(a:thing) == g:vigor_types.none
+endfunction
