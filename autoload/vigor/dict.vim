@@ -17,48 +17,51 @@ function! vigor#dict#defaults(dest, ...) abort
 endfunction
 
 function! vigor#dict#defaultsDeep(dest, ...) abort
+  let dest = a:dest
   let srcs = a:000
   for src in srcs
     for [k,v] in items(src)
-      if !has_key(a:dest, k)
-        let a:dest[k] = deepcopy(src[k])
+      if !has_key(dest, k)
+        let dest[k] = deepcopy(src[k])
       elseif type(v) == g:vigor_types.dict
-        call self.defaultsDeep(a:dest[k], v)
+        call vigor#dict#defaultsDeep(dest[k], v)
       endif
     endfor
   endfor
 
-  return a:dest
+  return dest
 endfunction
 
 function! vigor#dict#merge(dest, ...) abort
+  let dest = a:dest
   let srcs = a:000
   for src in srcs
     for [k,v] in items(src)
       if type(v) == g:vigor_types.dict
-        let a:dest[k] = self.merge(a:dest[k], v)
+        if !has_key(dest, k)
+          let dest[k] = deepcopy(src[k])
       else
-        let a:dest[k] = v
+          let dest[k] = vigor#dict#merge(dest[k], v)
+        endif
+      else
+        let dest[k] = v
       endif
     endfor
   endfor
 
-  return a:dest
+  return dest
 endfunction
 
 function! vigor#dict#get(obj, path, ...) abort
-  let default = a:0 == 1 ? a:1 : 0
+  let default = a:0 == 1 ? a:1 : v:null
   let path = s:NormalizePath(a:path)
   let obj = a:obj
   for segment in path
-    if (self.isObject(obj) && has_key(obj, segment)) || (self.isArray(obj) && len(obj) + 1 >= segment)
-      if self.isObject(obj[ segment  ]) || self.isArray(obj[ segment ])
-        let obj = obj[ segment ]
-      else
-        return obj[ segment ]
-      endif
-    else
+    let obj = get(obj, segment, v:null)
+    if vigor#type#isNull(obj)
       return default
+    elseif !vigor#type#isDict(obj) && !vigor#type#isList(obj)
+      return obj
     endif
   endfor
 endfunction
@@ -67,14 +70,11 @@ function! vigor#dict#has(obj, path) abort
   let path = s:NormalizePath(a:path)
   let obj = a:obj
   for segment in path
-    if (self.isObject(obj) && has_key(obj, segment)) || (self.isArray(obj) && len(obj) + 1 >= segment)
-      if self.isObject(obj[ segment  ]) || self.isArray(obj[ segment ])
-        let obj = obj[ segment ]
-      else
-        return exists('obj[ segment ]')
-      endif
-    else
+    let obj = get(obj, segment, v:null)
+    if vigor#type#isNull(obj)
       return 0
+    elseif !vigor#type#isDict(obj) && !vigor#type#isList(obj)
+      return 1
     endif
   endfor
 endfunction
