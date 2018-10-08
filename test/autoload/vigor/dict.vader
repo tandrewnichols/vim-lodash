@@ -1,0 +1,226 @@
+Before (Reset obj):
+  if has_key(g:, 'obj')
+    unlet g:obj
+  endif
+
+  if has_key(g:, 'val')
+    unlet g:val
+  endif
+
+  if has_key(g:, 'exc')
+    unlet g:exc
+  endif
+
+Execute (vigor#dict#extend):
+  let g:obj = {'foo': 'bar'}
+  let g:obj = vigor#dict#extend(g:obj, {'baz': 'quux', 'foo': 'not bar'}, {'hello': 'world'})
+
+Then (g:obj is extended):
+  AssertEqual g:obj, {'foo': 'not bar', 'baz': 'quux', 'hello': 'world'}
+
+Execute (vigor#dict#defaults):
+  let g:obj = {'foo': 'bar'}
+  let g:obj = vigor#dict#defaults(g:obj, {'baz': 'quux', 'foo': 'not bar'}, {'hello': 'world'})
+
+Then (g:obj is extended with defaults only):
+  AssertEqual g:obj, {'foo': 'bar', 'baz': 'quux', 'hello': 'world'}
+
+Execute (vigor#dict#defaultsDeep):
+  let g:obj = {'foo': { 'bar': 'baz' }}
+  let g:obj = vigor#dict#defaultsDeep(g:obj, {'foo': {'bar': 'not baz', 'quux': 1}, 'hello': 'world'}, {'a': {'b': {'c': 2}}})
+
+Then (g:obj is extended deeply with defaults only):
+  AssertEqual g:obj, {
+    \   'foo': {
+    \     'bar': 'baz',
+    \     'quux': 1
+    \   },
+    \   'hello': 'world',
+    \   'a': {
+    \     'b': {
+    \       'c': 2
+    \     }
+    \   }
+    \ }
+
+Execute (vigor#dict#merge):
+  let g:obj = {'foo': { 'bar': 'baz' }}
+  let g:obj = vigor#dict#merge(g:obj, {'foo': {'bar': 'not baz', 'quux': 1}, 'hello': 'world'}, {'a': {'b': {'c': 2}}})
+
+Then (g:obj is extended recursively):
+  AssertEqual g:obj, {
+    \   'foo': {
+    \     'bar': 'not baz',
+    \     'quux': 1
+    \   },
+    \   'hello': 'world',
+    \   'a': {
+    \     'b': {
+    \       'c': 2
+    \     }
+    \   }
+    \ }
+
+Execute (vigor#dict#get no default):
+  let g:obj = { 'foo': { 'bar': { 'baz': 'quux' }}}
+  let g:val = vigor#dict#get(g:obj, 'foo.bar.baz')
+
+Then (g:val == 'quux'):
+  AssertEqual g:val, 'quux'
+
+Execute (vigor#dict#get with default):
+  let g:obj = { 'foo': { 'bar': { 'baz': 'quux' }}}
+  let g:val = vigor#dict#get(g:obj, 'foo.bar.quux', 'hello world')
+
+Then (g:val == 'hello world'):
+  AssertEqual g:val, 'hello world'
+
+Execute (vigor#dict#get with list index):
+  let g:obj = { 'foo': [{ 'bar': 'baz' }, { 'bar': 'quux' }]}
+  let g:val = vigor#dict#get(g:obj, 'foo.1.bar')
+
+Then (g:val == 'quux'):
+  AssertEqual g:val, 'quux' 
+
+Execute (vigor#dict#get with missing index):
+  let g:obj = { 'foo': [{ 'bar': 'baz' }]}
+  let g:val = vigor#dict#get(g:obj, 'foo.1.bar', 'hello world')
+
+Then (g:val == 'hello world'):
+  AssertEqual g:val, 'hello world'
+
+Execute (vigor#dict#get with brackets and quotes):
+  let g:obj = { 'foo': [{ 'bar': { 'baz': { 'quux': [1, 2]}}}]}
+  let g:val = vigor#dict#get(g:obj, "foo[0].bar['baz'][\"quux\"].1")
+
+Then (g:val == 2):
+  AssertEqual g:val, 2
+
+Execute (vigor#dict#has when true):
+  let g:obj = { 'foo': { 'bar': { 'baz': 'quux' }}}
+  let g:val = vigor#dict#has(g:obj, 'foo.bar.baz')
+
+Then (g:val == 1):
+  AssertEqual g:val, 1
+
+Execute (vigor#dict#has when false):
+  let g:obj = { 'foo': { 'bar': { 'baz': 'quux' }}}
+  let g:val = vigor#dict#has(g:obj, 'foo.bar.quux')
+
+Then (g:val == 0):
+  AssertEqual g:val, 0
+
+Execute (vigor#dict#set with basic object):
+  let g:obj = {}
+  call vigor#dict#set(g:obj, 'foo.bar', 'baz')
+
+Then (foo.bar is baz):
+  AssertEqual g:obj, { 'foo': { 'bar': 'baz' }}
+
+Execute (vigor#dict#set with existing property):
+  let g:obj = { 'foo': { 'bar': 'baz' }}
+  call vigor#dict#set(g:obj, 'foo.bar', 'quux')
+
+Then (foo.bar is quux):
+  AssertEqual g:obj, { 'foo': { 'bar': 'quux' }}
+
+Execute (vigor#dict#set with an existing list):
+  let g:obj = { 'foo': { 'bar': [1, 2]}}
+  call vigor#dict#set(g:obj, 'foo.bar.0', 3)
+
+Then (foo.bar.0 is 3):
+  AssertEqual g:obj, { 'foo': { 'bar': [3, 2]}}
+
+Execute (vigor#dict#set creating a list):
+  let g:obj = { 'foo': {} }
+  call vigor#dict#set(g:obj, 'foo.bar.1', 3)
+
+Then (foo.bar.1 is 3):
+  AssertEqual g:obj, { 'foo': { 'bar': [v:null, 3]}}
+
+Execute (vigor#dict#set with a dict inside a list):
+  let g:obj = { 'foo': { 'bar': [{ 'a': { 'b': 2 }}]}}
+  call vigor#dict#set(g:obj, 'foo.bar.0.a.c', 4)
+
+Then (foo.bar.0.a.c == 4):
+  AssertEqual g:obj, {
+    \   'foo': {
+    \     'bar': [{
+    \       'a': {
+    \         'b': 2,
+    \         'c': 4
+    \       }
+    \     }]
+    \   }
+    \ }
+
+Execute (vigor#dict#set with an existing property of a different type):
+  let g:obj = { 'foo': { 'bar': 'baz' }}
+  call vigor#dict#set(g:obj, 'foo.bar.baz', 'quux')
+
+Then (nothing happens):
+  AssertEqual g:obj, { 'foo': { 'bar': 'baz' }}
+
+Execute (vigor#dict#set with an existing property of a different type with 'throw' passed in):
+  let g:obj = { 'foo': { 'bar': 'baz' }}
+  call vigor#dict#set(g:obj, 'foo.bar.baz', 'quux', 'ignore')
+
+Then (nothing happens):
+  AssertEqual g:obj, { 'foo': { 'bar': 'baz' }}
+
+Execute (vigor#dict#set with an existing property of a different type with 'ignore' passed in):
+  let g:obj = { 'foo': { 'bar': 'baz' }}
+  AssertThrows call vigor#dict#set(g:obj, 'foo.bar.baz', 'quux', 'throw')
+
+Then (an error is thrown):
+  AssertEqual g:vader_exception, 'vigor#dict#set(): Cannot set property "baz" of "baz"'
+
+Execute (vigor#dict#set with an existing property of a different type with 'force' passed in):
+  let g:obj = { 'foo': { 'bar': 'baz' }}
+  call vigor#dict#set(g:obj, 'foo.bar.baz', 'quux', 'force')
+
+Then (foo.bar is replaced with an object):
+  AssertEqual g:obj, { 'foo': { 'bar': { 'baz': 'quux' }}}
+
+Execute (vigor#dict#set with an existing property of a different type with 'force' passed in on a list):
+  let g:obj = { 'foo': { 'bar': 'baz' }}
+  call vigor#dict#set(g:obj, 'foo.bar.0', 'quux', 'force')
+
+Then (foo.bar is replaced with a list):
+  AssertEqual g:obj, { 'foo': { 'bar': [ 'quux' ]}}
+
+Execute (vigor#dict#set on deeply nested path creation):
+  let g:obj = {}
+  call vigor#dict#set(g:obj, 'foo.bar.1.baz.2.quux.0.a.b.c', 'hello world')
+
+Then (the property is set correctly):
+  AssertEqual g:obj, {
+    \   'foo': {
+    \     'bar': [v:null, {
+    \       'baz': [v:null, v:null, {
+    \         'quux': [{
+    \           'a': {
+    \             'b': {
+    \               'c': 'hello world'
+    \             }
+    \           }
+    \         }]
+    \       }]
+    \     }]
+    \   }
+    \ }
+
+Execute (vigor#dict#set on deeply nested replace):
+  let g:obj = { 'foo': { 'bar': 2 }}
+  call vigor#dict#set(g:obj, 'foo.bar.baz.0.quux', 'hello world', 'force')
+
+Then (the path is expanded):
+  AssertEqual g:obj, {
+    \   'foo': {
+    \     'bar': {
+    \       'baz': [{
+    \         'quux': 'hello world'
+    \       }]
+    \     }
+    \   }
+    \ }
