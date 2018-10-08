@@ -40,7 +40,7 @@ function! vigor#dict#merge(dest, ...) abort
       if type(v) == g:vigor_types.dict
         if !has_key(dest, k)
           let dest[k] = deepcopy(src[k])
-      else
+        else
           let dest[k] = vigor#dict#merge(dest[k], v)
         endif
       else
@@ -82,20 +82,47 @@ endfunction
 function! vigor#dict#set(obj, path, val, ...) abort
   let path = s:NormalizePath(a:path)
   let obj = a:obj
-  let out = obj
+  let conflict = a:0 ? a:1 : 'ignore'
 
   for segment in path
-    if index(path, segment) == len(path) - 1
-      let obj[ segment ] = a:val
-    else
-      if self.isObject(obj) && !has_key(obj, segment)
-        let obj[ segment ] = {}
-        let obj = obj[ segment ]
+    let idx = index(path, segment)
+    if idx == len(path) - 1
+      if vigor#type#isDict(obj) || vigor#type#isList(obj)
+        let obj[ segment ] = a:val
+      elseif conflict == 'throw'
+        throw 'vigor#dict#set(): Cannot set property "' . segment . '" of ' . (vigor#type#isNumber(obj) ? obj : '"' . obj . '"')
+      elseif conflict != 'ignore'
+        throw 'vigor#dict#set(): Unknown argument "' . conflict . '." Valid argument values for conflict handling are "ignore," "throw," and "force."'
       endif
+    else
+      let next = path[ idx + 1 ]
+      let nextIsNum = next =~ '^\d\+$'
+      if vigor#type#isDict(obj)
+        if !has_key(obj, segment)
+          if nextIsNum
+            let obj[ segment ] = vigor#list#fill([], next + 1)
+          else
+            let obj[ segment ] = {}
+          endif
+        endif
+      elseif vigor#type#isList(obj)
+        if len(obj) - 1 < segment
+          call vigor#list#fill(obj[ segment ], next + 1)
+        endif
+      endif
+
+      if empty(get(obj, segment))
+        let obj[ segment ] = nextIsNum ? vigor#list#fill([], next + 1) : {}
+      endif
+
+      if idx + 1 <= len(path) - 1 && !vigor#type#isDict(obj[ segment ]) && !vigor#type#isList(obj[ segment ]) && conflict == 'force'
+        let obj[ segment ] = nextIsNum ? vigor#list#fill([], next + 1) : {}
+      endif
+      let obj = obj[ segment ]
     endif
   endfor
 
-  return out
+  return obj
 endfunction
 
 function! s:NormalizePath(path) abort
