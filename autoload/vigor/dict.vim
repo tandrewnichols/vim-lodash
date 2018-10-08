@@ -1,4 +1,4 @@
-function! vigor#dict#extend(dest, ...)
+function! vigor#dict#extend(dest, ...) abort
   let srcs = a:000
   for src in srcs
     call extend(a:dest, src)
@@ -7,7 +7,7 @@ function! vigor#dict#extend(dest, ...)
   return a:dest
 endfunction
 
-function! vigor#dict#defaults(dest, ...)
+function! vigor#dict#defaults(dest, ...) abort
   let srcs = a:000
   for src in srcs
     call extend(a:dest, src, 'keep')
@@ -16,7 +16,7 @@ function! vigor#dict#defaults(dest, ...)
   return a:dest
 endfunction
 
-function! vigor#dict#defaultsDeep(dest, ...)
+function! vigor#dict#defaultsDeep(dest, ...) abort
   let srcs = a:000
   for src in srcs
     for [k,v] in items(src)
@@ -31,7 +31,7 @@ function! vigor#dict#defaultsDeep(dest, ...)
   return a:dest
 endfunction
 
-function! vigor#dict#merge(dest, ...)
+function! vigor#dict#merge(dest, ...) abort
   let srcs = a:000
   for src in srcs
     for [k,v] in items(src)
@@ -46,7 +46,7 @@ function! vigor#dict#merge(dest, ...)
   return a:dest
 endfunction
 
-function! vigor#dict#get(obj, path, ...)
+function! vigor#dict#get(obj, path, ...) abort
   let default = a:0 == 1 ? a:1 : 0
   let path = s:NormalizePath(a:path)
   let obj = a:obj
@@ -63,7 +63,7 @@ function! vigor#dict#get(obj, path, ...)
   endfor
 endfunction
 
-function! vigor#dict#has(obj, path)
+function! vigor#dict#has(obj, path) abort
   let path = s:NormalizePath(a:path)
   let obj = a:obj
   for segment in path
@@ -79,7 +79,7 @@ function! vigor#dict#has(obj, path)
   endfor
 endfunction
 
-function! vigor#dict#set(obj, path, val)
+function! vigor#dict#set(obj, path, val, ...) abort
   let path = s:NormalizePath(a:path)
   let obj = a:obj
   let out = obj
@@ -98,7 +98,7 @@ function! vigor#dict#set(obj, path, val)
   return out
 endfunction
 
-function! s:NormalizePath(path)
+function! s:NormalizePath(path) abort
   let path = a:path
   if type(path) == g:vigor_types.string
     let path = substitute(path, "'", '', 'g')

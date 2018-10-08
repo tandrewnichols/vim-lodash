@@ -1,4 +1,4 @@
-function! vigor#list#find(list, predicate)
+function! vigor#list#find(list, predicate, ...) abort
   return s:findByObj(a:list, a:predicate)
 endfunction
 
@@ -11,7 +11,7 @@ function! vigor#list#findIndex(list, predicate)
   endif
 endfunction
 
-function! s:findByObj(list, predicate)
+function! s:findByObj(list, predicate) abort
   for item in a:list
     let found = 1
     for key in keys(a:predicate)
@@ -29,7 +29,7 @@ function! s:findByObj(list, predicate)
   return -1
 endfunction
 
-function! vigor#list#sortBy(list, field)
+function! vigor#list#sortBy(list, field) abort
   if has_key(a:list[0], a:field)
     if type(a:list[0][a:field]) == g:vigor_types.number
       return self.sortNumeric(a:list, a:field)
@@ -41,7 +41,7 @@ function! vigor#list#sortBy(list, field)
   endif
 endfunction
 
-function! vigor#list#sortAlpha(list, field)
+function! vigor#list#sortAlpha(list, field) abort
   let field = a:field
   let list = copy(a:list)
 
@@ -64,7 +64,7 @@ function! vigor#list#sortAlpha(list, field)
   return sort(list, 's:SortAlpha')
 endfunction
 
-function! vigor#list#sortNumeric(list, prop)
+function! vigor#list#sortNumeric(list, prop) abort
   function! s:SortNumeric(a, b) closure
     let a = a:a[ a:prop ] + 0
     let b = a:b[ a:prop ] + 0
@@ -81,7 +81,7 @@ function! vigor#list#sortNumeric(list, prop)
   return sort(a:list, function('s:SortNumeric'))
 endfunction
 
-function! vigor#list#map(list, predicate)
+function! vigor#list#map(list, predicate) abort
   let list = copy(a:list)
   if type(a:predicate) == g:vigor_types.function
     return map(list, a:predicate)
@@ -91,7 +91,7 @@ function! vigor#list#map(list, predicate)
   endif
 endfunction
 
-function! vigor#list#reduce(list, fn, memo)
+function! vigor#list#reduce(list, fn, memo) abort
   let Iteree = a:fn
   let memo = a:memo
   let list = copy(a:list)

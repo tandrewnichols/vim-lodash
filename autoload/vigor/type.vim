@@ -1,31 +1,31 @@
-function! vigor#type#isNumber(thing)
+function! vigor#type#isNumber(thing) abort
   return type(a:thing) == g:vigor_types.number
 endfunction
 
-function! vigor#type#isString(thing)
+function! vigor#type#isString(thing) abort
   return type(a:thing) == g:vigor_types.string
 endfunction
 
-function! vigor#type#isFunction(thing)
+function! vigor#type#isFunction(thing) abort
   return type(a:thing) == g:vigor_types.function
 endfunction
 
-function! vigor#type#isFuncref(thing)
+function! vigor#type#isFuncref(thing) abort
   return type(a:thing) == g:vigor_types.function
 endfunction
 
-function! vigor#type#isArray(thing)
+function! vigor#type#isArray(thing) abort
   return type(a:thing) == g:vigor_types.list
 endfunction
 
-function! vigor#type#isList(thing)
+function! vigor#type#isList(thing) abort
   return type(a:thing) == g:vigor_types.list
 endfunction
 
-function! vigor#type#isObject(thing)
+function! vigor#type#isObject(thing) abort
   return type(a:thing) == g:vigor_types.dict
 endfunction
 
-function! vigor#type#isDict(thing)
+function! vigor#type#isDict(thing) abort
   return type(a:thing) == g:vigor_types.dict
 endfunction
