@@ -45,3 +45,10 @@ function! vigor#string#padEnd(str, len, ...) abort
     return a:str
   endif
 endfunction
+
+function! vigor#string#matchAll(str, pat) abort
+  let list = []
+  let pat = stridx(a:pat, '\zs') > 0 ? a:pat : '\zs' . a:pat . '\ze'
+  call substitute(a:str, pat, '\=add(list, submatch(0))', 'g')
+  return list
+endfunction

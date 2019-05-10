@@ -23,7 +23,7 @@ function! vigor#dict#defaultsDeep(dest, ...) abort
     for [k,v] in items(src)
       if !has_key(dest, k)
         let dest[k] = deepcopy(src[k])
-      elseif type(v) == g:vigor_types.dict
+      elseif vigor#type#isDict(v)
         call vigor#dict#defaultsDeep(dest[k], v)
       endif
     endfor
@@ -37,7 +37,7 @@ function! vigor#dict#merge(dest, ...) abort
   let srcs = a:000
   for src in srcs
     for [k,v] in items(src)
-      if type(v) == g:vigor_types.dict
+      if vigor#type#isDict(v)
         if !has_key(dest, k)
           let dest[k] = deepcopy(src[k])
         else
@@ -127,7 +127,7 @@ endfunction
 
 function! s:NormalizePath(path) abort
   let path = a:path
-  if type(path) == g:vigor_types.string
+  if vigor#type#isString(path)
     let path = substitute(path, "'", '', 'g')
     let path = substitute(path, '"', '', 'g')
     let path = substitute(path, '\[', '.', 'g')

@@ -3,11 +3,11 @@ function! vigor#list#find(list, predicate, ...) abort
   let list = a:list
   let args = a:0 > 0 ? a:1 : 3
 
-  if type(predicate) == g:vigor_types.dict
+  if vigor#type#isDict(predicate)
     return s:findByObj(list, predicate)
-  elseif type(predicate) == g:vigor_types.function
+  elseif vigor#type#isFunction(predicate)
     return s:findByFunc(list, predicate, args)
-  elseif type(predicate) == g:vigor_types.string
+  elseif vigor#type#isString(predicate)
     return s:findByFunc(list, function(predicate), args)
   endif
 endfunction
@@ -65,7 +65,7 @@ endfunction
 
 function! vigor#list#sortBy(list, field) abort
   if has_key(a:list[0], a:field)
-    if type(a:list[0][a:field]) == g:vigor_types.number
+    if vigor#type#isNumber(a:list[0][a:field])
       return vigor#list#sortNumeric(a:list, a:field)
     else
       return vigor#list#sortAlpha(a:list, a:field)
@@ -117,9 +117,9 @@ endfunction
 
 function! vigor#list#map(list, predicate) abort
   let list = copy(a:list)
-  if type(a:predicate) == g:vigor_types.function
+  if vigor#type#isFunction(a:predicate)
     return map(list, a:predicate)
-  elseif type(a:predicate) == g:vigor_types.string
+  elseif vigor#type#isString(a:predicate)
     let predicate = 'v:val.' . a:predicate
     return map(list, predicate)
   endif
